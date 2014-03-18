@@ -182,6 +182,12 @@ class BitFieldTest(TestCase):
         self.assertFalse(BitFieldTestModel.objects.exclude(flags=BitFieldTestModel.flags.FLAG_0).exists())
         self.assertFalse(BitFieldTestModel.objects.exclude(flags=BitFieldTestModel.flags.FLAG_1).exists())
 
+    def test_nested_select(self):
+        subselect = BitFieldTestModel.objects.exclude(flags=BitFieldTestModel.flags.FLAG_1).values_list('id', flat=True)
+        # This line explodes.
+        objects = CompositeBitFieldTestModel.objects.filter(id__in=subselect)
+        self.assertEqual(0, len(objects), 'This should not return any results.')
+
     def test_update(self):
         instance = BitFieldTestModel.objects.create(flags=0)
         self.assertFalse(instance.flags.FLAG_0)
